@@ -9,9 +9,10 @@ import (
 
 var TargetURL = "https://read.amazon.com/notebook"
 
-var Cookie = `your_cookie`
+const Cookie = `COOKIE`
 
 type Book struct {
+	ID     string
 	Title  string
 	Author string
 	Note   []string
@@ -34,6 +35,19 @@ func GetBooks() []Book {
 	c.OnHTML("a p", func(e *colly.HTMLElement) {
 		bs[i].Author = strings.Split(e.Text, ": ")[1]
 		i++
+	})
+
+	c.OnHTML("#kp-notebook-library", func(e *colly.HTMLElement) {
+		attrs := e.ChildAttrs("div", "id")
+
+		for i := range bs {
+			bs[i].ID = attrs[i]
+		}
+	})
+
+	// span with id highlight
+	c.OnHTML(`div span[id=highlight]`, func(e *colly.HTMLElement) {
+		fmt.Println(e.Text)
 	})
 
 	c.OnRequest(func(r *colly.Request) {

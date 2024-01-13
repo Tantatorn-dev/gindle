@@ -10,6 +10,6 @@ func main() {
 	bc := crawler.GetBooks()
 
 	for _, b := range bc {
-		fmt.Println(b.Title, b.Author)
+		fmt.Println(b.ID, b.Title, b.Author)
 	}
 }
