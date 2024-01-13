@@ -15,7 +15,7 @@ type Book struct {
 	ID     string
 	Title  string
 	Author string
-	Note   []string
+	Notes  []string
 }
 
 func GetBooks() []Book {
@@ -37,26 +37,38 @@ func GetBooks() []Book {
 		i++
 	})
 
+	noteCollector := c.Clone()
+
 	c.OnHTML("#kp-notebook-library", func(e *colly.HTMLElement) {
 		attrs := e.ChildAttrs("div", "id")
 
 		for i := range bs {
 			bs[i].ID = attrs[i]
+			bs[i].Notes = getNotes(noteCollector, attrs[i])
 		}
-	})
-
-	// span with id highlight
-	c.OnHTML(`div span[id=highlight]`, func(e *colly.HTMLElement) {
-		fmt.Println(e.Text)
 	})
 
 	c.OnRequest(func(r *colly.Request) {
 		r.Headers.Set("Cookie", Cookie)
-
-		fmt.Println("Visiting", r.URL)
 	})
 
 	c.Visit(TargetURL)
 
 	return bs
+}
+
+func getNotes(c *colly.Collector, id string) []string {
+	var ns []string
+
+	c.OnHTML(`div span[id=highlight]`, func(e *colly.HTMLElement) {
+		ns = append(ns, e.Text)
+	})
+
+	c.OnRequest(func(r *colly.Request) {
+		r.Headers.Set("Cookie", Cookie)
+	})
+
+	c.Visit(fmt.Sprintf("%s/?asin=%s&contentLimitState=&", TargetURL, id))
+
+	return ns
 }
