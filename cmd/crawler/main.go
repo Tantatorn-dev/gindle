@@ -9,6 +9,7 @@ import (
 
 func main() {
 	cookie := flag.String("cookie", "", "Cookie from read.amazon.com")
+	targetPath := flag.String("target", "./notes", "Target path for JSON file")
 
 	flag.Parse()
 
@@ -20,5 +21,9 @@ func main() {
 
 	for _, b := range bc {
 		fmt.Println(b.Title, b.Author, len(b.Notes))
+		_, err := b.ToJson(*targetPath)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
