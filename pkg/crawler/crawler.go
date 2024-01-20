@@ -7,9 +7,7 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
-var TargetURL = "https://read.amazon.com/notebook"
-
-const Cookie = `COOKIE`
+const TargetURL = "https://read.amazon.com/notebook"
 
 type Book struct {
 	ID     string
@@ -18,7 +16,7 @@ type Book struct {
 	Notes  []string
 }
 
-func GetBooks() []Book {
+func GetBooks(cookie string) []Book {
 	var bs []Book
 
 	c := colly.NewCollector()
@@ -44,12 +42,12 @@ func GetBooks() []Book {
 
 		for i := range bs {
 			bs[i].ID = attrs[i]
-			bs[i].Notes = getNotes(noteCollector, attrs[i])
+			bs[i].Notes = getNotes(noteCollector, cookie, attrs[i])
 		}
 	})
 
 	c.OnRequest(func(r *colly.Request) {
-		r.Headers.Set("Cookie", Cookie)
+		r.Headers.Set("Cookie", cookie)
 	})
 
 	c.Visit(TargetURL)
@@ -57,7 +55,7 @@ func GetBooks() []Book {
 	return bs
 }
 
-func getNotes(c *colly.Collector, id string) []string {
+func getNotes(c *colly.Collector, cookie, id string) []string {
 	var ns []string
 
 	c.OnHTML(`div span[id=highlight]`, func(e *colly.HTMLElement) {
@@ -65,7 +63,7 @@ func getNotes(c *colly.Collector, id string) []string {
 	})
 
 	c.OnRequest(func(r *colly.Request) {
-		r.Headers.Set("Cookie", Cookie)
+		r.Headers.Set("Cookie", cookie)
 	})
 
 	c.Visit(fmt.Sprintf("%s/?asin=%s&contentLimitState=&", TargetURL, id))
